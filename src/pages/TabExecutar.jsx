@@ -265,8 +265,8 @@ export default function TabExecutar() {
   };
 
   // FIX #12: substituir alert() por modal interno
-  const handleExecutar = () => {
-    if (!podeExecutar) return;
+  const handleExecutar = (forcarExecucao = false) => {
+    if (!podeExecutar && !forcarExecucao) return;
     const nova = fila || gerarEtapasIniciais(draft);
     if (!fila) {
       setFila(nova);
@@ -275,7 +275,7 @@ export default function TabExecutar() {
     setShowFila(true);
     showModal({
       title: '🚀 Iniciar Execução',
-      message: `Fila gerada com ${nova.length} etapas.\n\nClaude Computer Use deve:\n1. Ler as Instruções de Execução abaixo\n2. Acessar devzapp.com.br\n3. Executar Infraestrutura → Programação → Auditoria\n4. Marcar cada etapa como ✓ OK ou ✗ Erro na fila\n\nNão interrompa a execução exceto em caso de erro.`,
+      message: `Fila gerada com ${nova.length} etapas.${forcarExecucao && alertas.length > 0 ? `\n\n⚠️ Executando com ${alertas.length} alerta(s) ignorado(s) por sua decisão.` : ''}\n\nClaude Computer Use deve:\n1. Ler as Instruções de Execução abaixo\n2. Acessar devzapp.com.br\n3. Executar Infraestrutura → Programação → Auditoria\n4. Marcar cada etapa como ✓ OK ou ✗ Erro na fila\n\nNão interrompa a execução exceto em caso de erro.`,
       actions: [
         { label: 'Entendido — Iniciar', variant: 'primary', action: closeModal },
         { label: 'Cancelar', variant: 'ghost', action: closeModal },
@@ -338,9 +338,27 @@ export default function TabExecutar() {
       {/* Alertas */}
       {alertas.length > 0 && (
         <div className="card p-4 mb-4" style={{ borderColor: 'rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.04)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle size={15} style={{ color: '#f59e0b' }} />
-            <span className="text-sm font-semibold" style={{ color: '#f59e0b' }}>{alertas.length} alerta{alertas.length > 1 ? 's' : ''}</span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={15} style={{ color: '#f59e0b' }} />
+              <span className="text-sm font-semibold" style={{ color: '#f59e0b' }}>{alertas.length} alerta{alertas.length > 1 ? 's' : ''} não bloqueante{alertas.length > 1 ? 's' : ''}</span>
+            </div>
+            {podeExecutar && (
+              <button
+                className="btn btn-sm"
+                style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11 }}
+                onClick={() => showModal({
+                  title: '⚠️ Executar com alertas',
+                  message: `Você está prestes a executar ignorando ${alertas.length} alerta(s).\n\nEsses alertas são avisos sobre possíveis inconsistências (intervalos curtos, referências temporais, etc.) — não são erros críticos.\n\nVocê assume a responsabilidade pelos alertas e confirma que está tudo correto?`,
+                  actions: [
+                    { label: 'Sim, executar mesmo assim', variant: 'primary', action: () => { closeModal(); handleExecutar(true); } },
+                    { label: 'Cancelar', variant: 'ghost', action: closeModal },
+                  ],
+                })}
+              >
+                ✓ Assumir e executar mesmo assim
+              </button>
+            )}
           </div>
           <div className="space-y-1.5">
             {alertas.map((a, i) => (
