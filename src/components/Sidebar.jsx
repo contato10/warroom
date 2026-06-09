@@ -46,7 +46,7 @@ function ExpertItem({ expert }) {
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
       >
-        <button onClick={() => setOpen(o => !o)} className="flex items-center gap-1.5 flex-1 min-w-0">
+        <button onClick={() => { setOpen(o => !o); setSelectedExpertId(expert.id); }} className="flex items-center gap-1.5 flex-1 min-w-0">
           {open ? <ChevronDown size={13} className="flex-shrink-0" /> : <ChevronRight size={13} className="flex-shrink-0" />}
           {editingName ? (
             <input
